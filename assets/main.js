@@ -239,8 +239,9 @@
         print("available: <span class='path'>help whoami projects stack contact clear</span>");
       },
       whoami: function () {
-        print("idesyatov — DevOps · SRE · Cloud Native");
-        print("<span class='muted'>platform engineering · GitOps · reliability · scalability</span>");
+        print("<span class='path'>Focus:</span> DevOps · SRE · Cloud Native");
+        print("<span class='path'>Interests:</span> Solutions Architecture &amp; Development · reliability · scalability");
+        print("<span class='path'>Exploring:</span> AI · LLMs · agent orchestration");
       },
       projects: function () {
         print("featured: " + FEATURED.map(function (n) {
