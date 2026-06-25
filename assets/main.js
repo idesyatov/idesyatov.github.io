@@ -225,6 +225,7 @@
   function initTerminal() {
     var form = $("#term-form"), input = $("#term-input"), out = $("#term-out");
     if (!form || !input || !out) return;
+    var intro = out.innerHTML; // keep the hint line so `clear` doesn't wipe it
 
     function print(text, cls) {
       var p = el("p", "term__line" + (cls ? " " + cls : ""));
@@ -252,7 +253,7 @@
       contact: function () {
         print("github: <a href='https://github.com/" + USER + "' rel='noopener'>github.com/" + USER + "</a>");
       },
-      clear: function () { out.innerHTML = ""; }
+      clear: function () { out.innerHTML = intro; }
     };
 
     form.addEventListener("submit", function (e) {

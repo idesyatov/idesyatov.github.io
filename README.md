@@ -62,11 +62,6 @@ This is a **user site**, so the repo must be named exactly `idesyatov.github.io`
 Add a `CNAME` file containing the domain (e.g. `desyatov.dev`), set the DNS
 records GitHub shows, then enable **Enforce HTTPS** in Pages settings.
 
-## TODO before publishing
-
-- `index.html` → contact section has an `<add-email>` placeholder. Replace with
-  a real address (or remove) — confirm with the owner first.
-
 ## Accessibility / performance notes
 
 - Single web font (JetBrains Mono) with `monospace` fallback; `font-display: swap`.

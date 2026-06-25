@@ -2,3 +2,6 @@
 .DS_Store
 Thumbs.db
 node_modules/
+
+# local working notes — not for publishing
+ROADMAP.md
