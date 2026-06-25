@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>idesyatov · DevOps · SRE · Cloud Native</title>
+  <meta name="description" content="idesyatov — DevOps / SRE / Cloud Native engineer. Platform engineering, GitOps, reliability. Projects in Go, Rust, TypeScript, Shell." />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#1a1b26" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="idesyatov · DevOps · SRE · Cloud Native" />
+  <meta property="og:description" content="Platform engineering · GitOps · reliability · scalability. Projects in Go, Rust, TypeScript, Shell." />
+  <meta property="og:url" content="https://idesyatov.github.io" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231a1b26'/%3E%3Ctext x='3' y='12' font-family='monospace' font-size='10' fill='%239ece6a'%3E%3E_%3C/text%3E%3C/svg%3E" />
+
+  <!-- JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <main id="main" class="page">
+
+    <!-- ===================== HERO / neofetch ===================== -->
+    <section class="window" aria-labelledby="hero-title">
+      <header class="window__bar">
+        <span class="dots" aria-hidden="true">
+          <span class="dot dot--red"></span>
+          <span class="dot dot--yellow"></span>
+          <span class="dot dot--green"></span>
+        </span>
+        <span class="window__title" id="hero-title">idesyatov@github: ~</span>
+        <span class="dots dots--spacer" aria-hidden="true"></span>
+      </header>
+
+      <div class="window__body">
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> neofetch</p>
+
+        <div class="neofetch">
+          <pre class="ascii" aria-hidden="true">    .--.
+   |o_o |
+   |:_/ |
+  //   \ \
+ (|     | )
+/'\_   _/`\
+\___)=(___/</pre>
+
+          <dl class="fields">
+            <div class="field"><dt>idesyatov</dt><dd>@github</dd></div>
+            <div class="field field--rule"><dt>OS</dt><dd>Unix-like</dd></div>
+            <div class="field"><dt>Focus</dt><dd>DevOps · SRE · Cloud Native</dd></div>
+            <div class="field"><dt>Interests</dt><dd>platform engineering · GitOps · reliability · scalability</dd></div>
+            <div class="field"><dt>Exploring</dt><dd>AI agents · LLMOps</dd></div>
+            <div class="field field--rule"><dt>Followers</dt><dd data-stat="followers">—</dd></div>
+            <div class="field"><dt>Public&nbsp;repos</dt><dd data-stat="public_repos">—</dd></div>
+          </dl>
+        </div>
+
+        <!-- language bars (heavy metric: snapshot, not computed in-browser) -->
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> cat languages</p>
+        <ul class="langs" id="langs" aria-label="Top languages by share"></ul>
+
+        <!-- code statistics snapshot -->
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> cat stats</p>
+        <ul class="stats" id="stats" aria-label="Code statistics"></ul>
+        <p class="stats__note" id="stats-note" hidden></p>
+      </div>
+    </section>
+
+    <!-- ===================== PROJECTS ===================== -->
+    <section class="window" aria-labelledby="projects-title">
+      <header class="window__bar">
+        <span class="dots" aria-hidden="true">
+          <span class="dot dot--red"></span>
+          <span class="dot dot--yellow"></span>
+          <span class="dot dot--green"></span>
+        </span>
+        <span class="window__title" id="projects-title">~/projects</span>
+        <span class="dots dots--spacer" aria-hidden="true"></span>
+      </header>
+      <div class="window__body">
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> cat projects</p>
+        <p class="hint" id="projects-status" role="status">Loading live repositories from GitHub…</p>
+        <ul class="cards" id="projects"></ul>
+        <p class="hint hint--muted">
+          <span class="path">→</span> full list:
+          <a href="https://github.com/idesyatov?tab=repositories" rel="noopener">github.com/idesyatov?tab=repositories</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== STACK ===================== -->
+    <section class="window" aria-labelledby="stack-title">
+      <header class="window__bar">
+        <span class="dots" aria-hidden="true">
+          <span class="dot dot--red"></span>
+          <span class="dot dot--yellow"></span>
+          <span class="dot dot--green"></span>
+        </span>
+        <span class="window__title" id="stack-title">~/stack</span>
+        <span class="dots dots--spacer" aria-hidden="true"></span>
+      </header>
+      <div class="window__body">
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> cat stack</p>
+        <ul class="tags" aria-label="Technology stack">
+          <li>Docker</li><li>Kubernetes</li><li>Terraform</li><li>Ansible</li>
+          <li>CI/CD</li><li>Prometheus</li><li>Grafana</li><li>Linux</li>
+          <li>Git</li><li>Networking</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACT ===================== -->
+    <section class="window" aria-labelledby="contact-title">
+      <header class="window__bar">
+        <span class="dots" aria-hidden="true">
+          <span class="dot dot--red"></span>
+          <span class="dot dot--yellow"></span>
+          <span class="dot dot--green"></span>
+        </span>
+        <span class="window__title" id="contact-title">~/contact</span>
+        <span class="dots dots--spacer" aria-hidden="true"></span>
+      </header>
+      <div class="window__body">
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> contact</p>
+        <ul class="links" aria-label="Contacts">
+          <li>
+            <span class="links__key">github</span>
+            <a href="https://github.com/idesyatov" rel="noopener">github.com/idesyatov</a>
+          </li>
+          <li>
+            <span class="links__key">email</span>
+            <!-- placeholder: confirm with owner before publishing a real address -->
+            <span class="links__placeholder" title="Confirm with owner before publishing">&lt;add-email&gt;</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== INTERACTIVE TERMINAL (optional bonus) ===================== -->
+    <section class="window" aria-labelledby="term-title">
+      <header class="window__bar">
+        <span class="dots" aria-hidden="true">
+          <span class="dot dot--red"></span>
+          <span class="dot dot--yellow"></span>
+          <span class="dot dot--green"></span>
+        </span>
+        <span class="window__title" id="term-title">bash — try it</span>
+        <span class="dots dots--spacer" aria-hidden="true"></span>
+      </header>
+      <div class="window__body">
+        <div id="term-out" class="term__out" aria-live="polite">
+          <p class="term__line muted">Type <span class="path">help</span> and press Enter. Commands: help · whoami · projects · stack · clear</p>
+        </div>
+        <form class="term__form" id="term-form" autocomplete="off">
+          <label class="prompt" for="term-input">
+            <span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span>
+          </label>
+          <input id="term-input" class="term__input" type="text" name="cmd"
+                 aria-label="Terminal command input" spellcheck="false" />
+          <span class="cursor" aria-hidden="true"></span>
+        </form>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span>
+      <span class="cursor cursor--static" aria-hidden="true"></span>
+      <span class="foot__meta">built static · hosted on GitHub Pages</span>
+    </footer>
+  </main>
+
+  <script src="assets/main.js" defer></script>
+</body>
+</html>
