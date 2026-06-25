@@ -228,6 +228,18 @@
     }
   }
 
+  function getRepos() {
+    var cached = cacheGet("gh_repos");
+    if (cached) return Promise.resolve(cached);
+    return getJSON("https://api.github.com/users/" + USER + "/repos?sort=pushed&per_page=100")
+      .then(function (repos) {
+        if (!Array.isArray(repos)) return null;
+        cacheSet("gh_repos", repos);
+        return repos;
+      })
+      .catch(function () { return null; });
+  }
+
   function loadRepos() {
     var cached = cacheGet("gh_repos");
     if (cached) { renderProjects(cached); return; }
@@ -274,9 +286,21 @@
         });
       },
       projects: function () {
-        print("featured: " + FEATURED.map(function (n) {
-          return "<a href='https://github.com/" + USER + "/" + n + "' rel='noopener'>" + n + "</a>";
-        }).join(" "));
+        var line = print("<span class='muted'>fetching repositories…</span>");
+        getRepos().then(function (repos) {
+          var own = (repos || []).filter(function (r) { return !r.fork; });
+          if (!own.length) {
+            line.innerHTML = "<span class='muted'>repositories unavailable — try again later</span>";
+            return;
+          }
+          line.innerHTML = "<span class='muted'>" + own.length + " repositories · sorted by last push</span>";
+          own.forEach(function (r) {
+            var stars = r.stargazers_count > 0 ? " <span class='card__star'>★" + r.stargazers_count + "</span>" : "";
+            var arch = r.archived ? " <span class='muted'>[archived]</span>" : "";
+            var desc = r.description ? " <span class='muted'>— " + esc(r.description) + "</span>" : "";
+            print("<a href='" + esc(r.html_url) + "' rel='noopener'>" + esc(r.name) + "</a>" + stars + arch + desc);
+          });
+        });
       },
       stack: function () {
         print("Docker Kubernetes Terraform Ansible CI/CD Prometheus Grafana Linux Git Networking");
