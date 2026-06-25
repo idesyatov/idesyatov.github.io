@@ -100,6 +100,26 @@
     }).catch(function () {/* page still works without it */});
   }
 
+  /* ---------- visitor geo (public IP, used by `whoami`) ---------- */
+  function loadGeo() {
+    var cached = cacheGet("geo");
+    if (cached) return Promise.resolve(cached);
+    return fetch("https://ipwho.is/")
+      .then(function (r) { return r.json(); })
+      .then(function (g) {
+        if (!g || g.success === false) return null;
+        var data = {
+          ip: g.ip, city: g.city, region: g.region, country: g.country,
+          flag: g.flag && g.flag.emoji,
+          isp: g.connection && g.connection.isp,
+          timezone: g.timezone && g.timezone.id
+        };
+        cacheSet("geo", data);
+        return data;
+      })
+      .catch(function () { return null; });
+  }
+
   /* ---------- live profile (1 request) ---------- */
   function loadProfile() {
     var cached = cacheGet("gh_profile");
@@ -232,6 +252,7 @@
       p.innerHTML = text; // callers pass pre-escaped / trusted markup
       out.appendChild(p);
       out.scrollTop = out.scrollHeight;
+      return p;
     }
 
     var COMMANDS = {
@@ -239,9 +260,18 @@
         print("available: <span class='path'>help whoami projects stack contact clear</span>");
       },
       whoami: function () {
-        print("<span class='path'>Focus:</span> DevOps · SRE · Cloud Native");
-        print("<span class='path'>Interests:</span> Solutions Architecture &amp; Development · reliability · scalability");
-        print("<span class='path'>Exploring:</span> AI · LLMs · agent orchestration");
+        var line = print("<span class='muted'>resolving your network info…</span>");
+        loadGeo().then(function (g) {
+          if (!g || !g.ip) {
+            line.innerHTML = "<span class='muted'>network info unavailable — try again later</span>";
+            return;
+          }
+          var loc = [g.city, g.region, g.country].filter(Boolean).join(", ");
+          line.innerHTML = "<span class='path'>ip:</span> " + esc(g.ip);
+          if (loc) print("<span class='path'>location:</span> " + (g.flag ? esc(g.flag) + " " : "") + esc(loc));
+          if (g.isp) print("<span class='path'>isp:</span> " + esc(g.isp));
+          if (g.timezone) print("<span class='path'>timezone:</span> " + esc(g.timezone));
+        });
       },
       projects: function () {
         print("featured: " + FEATURED.map(function (n) {
