@@ -101,23 +101,57 @@
   }
 
   /* ---------- visitor geo (public IP, used by `whoami`) ---------- */
+  function flagFromCC(cc) {
+    if (!cc || cc.length !== 2) return "";
+    var base = 0x1F1E6 - "A".charCodeAt(0);
+    cc = cc.toUpperCase();
+    return String.fromCodePoint(base + cc.charCodeAt(0)) +
+           String.fromCodePoint(base + cc.charCodeAt(1));
+  }
+
+  // Tried in order; first reachable provider that returns an IP wins.
+  // Some providers are unreachable from certain regions, hence the fallback.
+  var GEO_PROVIDERS = [
+    { url: "https://ipwho.is/", map: function (g) {
+        if (!g || g.success === false || !g.ip) return null;
+        return { ip: g.ip, city: g.city, region: g.region, country: g.country,
+                 flag: g.flag && g.flag.emoji,
+                 isp: g.connection && g.connection.isp,
+                 timezone: g.timezone && g.timezone.id };
+      } },
+    { url: "https://get.geojs.io/v1/ip/geo.json", map: function (g) {
+        if (!g || !g.ip) return null;
+        return { ip: g.ip, city: g.city, region: g.region, country: g.country,
+                 flag: flagFromCC(g.country_code),
+                 isp: g.organization_name,
+                 timezone: g.timezone };
+      } },
+    { url: "https://ipapi.co/json/", map: function (g) {
+        if (!g || g.error || !g.ip) return null;
+        return { ip: g.ip, city: g.city, region: g.region, country: g.country_name,
+                 flag: flagFromCC(g.country_code),
+                 isp: g.org,
+                 timezone: g.timezone };
+      } }
+  ];
+
   function loadGeo() {
     var cached = cacheGet("geo");
     if (cached) return Promise.resolve(cached);
-    return fetch("https://ipwho.is/")
-      .then(function (r) { return r.json(); })
-      .then(function (g) {
-        if (!g || g.success === false) return null;
-        var data = {
-          ip: g.ip, city: g.city, region: g.region, country: g.country,
-          flag: g.flag && g.flag.emoji,
-          isp: g.connection && g.connection.isp,
-          timezone: g.timezone && g.timezone.id
-        };
-        cacheSet("geo", data);
-        return data;
-      })
-      .catch(function () { return null; });
+    var i = 0;
+    function next() {
+      if (i >= GEO_PROVIDERS.length) return null;
+      var p = GEO_PROVIDERS[i++];
+      return fetch(p.url)
+        .then(function (r) { return r.json(); })
+        .then(function (g) {
+          var data = p.map(g);
+          if (data && data.ip) { cacheSet("geo", data); return data; }
+          return next();
+        })
+        .catch(function () { return next(); });
+    }
+    return next();
   }
 
   /* ---------- live profile (1 request) ---------- */
