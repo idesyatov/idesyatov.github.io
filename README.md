@@ -47,21 +47,6 @@ npx serve .
 
 Open http://localhost:8000
 
-## Deploy (GitHub Pages)
-
-This is a **user site**, so the repo must be named exactly `idesyatov.github.io`.
-
-1. Push to the default branch (`main` or `master`).
-2. **Settings → Pages → Build and deployment → Source: _Deploy from a branch_**,
-   branch = default, folder = `/ (root)`.
-3. Wait ~1 min — the site is served at `https://idesyatov.github.io` over HTTPS
-   (issued automatically).
-
-### Custom domain (optional)
-
-Add a `CNAME` file containing the domain (e.g. `desyatov.dev`), set the DNS
-records GitHub shows, then enable **Enforce HTTPS** in Pages settings.
-
 ## Accessibility / performance notes
 
 - Single web font (JetBrains Mono) with `monospace` fallback; `font-display: swap`.
