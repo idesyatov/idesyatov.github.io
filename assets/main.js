@@ -407,10 +407,25 @@
       clear: function () { out.innerHTML = intro; }
     };
 
+    // block caret like the footer (green, blinking), positioned after the typed
+    // text via an offscreen mirror — the native caret is hidden in CSS.
+    var caret = el("span", "term__caret");
+    var mirror = el("span", "term__mirror");
+    input.parentNode.insertBefore(caret, input.nextSibling);
+    form.appendChild(mirror);
+    function syncCaret() {
+      mirror.textContent = input.value;
+      input.style.width = (mirror.offsetWidth + 2) + "px";
+    }
+    input.addEventListener("input", syncCaret);
+    form.addEventListener("click", function () { input.focus(); });
+    syncCaret();
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var raw = input.value.trim();
       input.value = "";
+      syncCaret();
       if (!raw) return;
       print("<span class='user'>idesyatov@github</span><span class='sep'>:</span>" +
             "<span class='path'>~</span><span class='dollar'>$</span> " + esc(raw));

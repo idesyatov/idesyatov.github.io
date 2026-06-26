@@ -209,12 +209,18 @@ a:hover, a:focus-visible { color: var(--teal); border-bottom-color: var(--teal);
 .term__line.muted { color: var(--muted); }
 .term__line.err { color: var(--red); }
 .term__line .flag { vertical-align: -2px; border-radius: 2px; }
-.term__form { display: flex; align-items: center; gap: 8px; }
+.term__form { display: flex; align-items: center; gap: 4px; }
 .term__input {
-  flex: 1; background: transparent; border: none; color: var(--text);
-  font: inherit; padding: 2px 0; min-width: 0;
+  flex: 0 1 auto; width: 2px; background: transparent; border: none; color: var(--text);
+  font: inherit; padding: 2px 0; min-width: 0; max-width: 100%; caret-color: transparent;
 }
 .term__input:focus { outline: none; }
+.term__caret {
+  display: inline-block; flex: none; width: 11px; height: 1.2em; margin-left: 1px;
+  vertical-align: text-bottom; background: var(--green);
+  animation: blink 1.05s steps(1) infinite;
+}
+.term__mirror { position: absolute; left: -9999px; top: 0; white-space: pre; font: inherit; }
 
 /* ===== blinking cursor ===== */
 .cursor {
@@ -242,7 +248,7 @@ a:hover, a:focus-visible { color: var(--teal); border-bottom-color: var(--teal);
 @keyframes shimmer { 100% { transform: translateX(100%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cursor { animation: none; }
+  .cursor, .term__caret { animation: none; }
   .skeleton::after { animation: none; }
   .card { transition: none; }
 }
