@@ -311,13 +311,14 @@
     }
   }
 
-  function getRepos() {
-    var cached = cacheGet("gh_repos");
+  // repos idesyatov starred (used by `stars`); recently-starred first, cached.
+  function getStars() {
+    var cached = cacheGet("gh_stars");
     if (cached) return Promise.resolve(cached);
-    return getJSON("https://api.github.com/users/" + USER + "/repos?sort=pushed&per_page=100")
+    return getJSON("https://api.github.com/users/" + USER + "/starred?per_page=10")
       .then(function (repos) {
         if (!Array.isArray(repos)) return null;
-        cacheSet("gh_repos", repos);
+        cacheSet("gh_stars", repos);
         return repos;
       })
       .catch(function () { return null; });
@@ -352,7 +353,7 @@
 
     var COMMANDS = {
       help: function () {
-        print("available: <span class='path'>help whoami projects news contact clear</span>");
+        print("available: <span class='path'>help whoami stars news contact clear</span>");
       },
       whoami: function () {
         var line = print("<span class='muted'>resolving your network info…</span>");
@@ -371,20 +372,18 @@
           if (g.timezone) print("<span class='path'>timezone:</span> " + esc(g.timezone));
         });
       },
-      projects: function () {
-        var line = print("<span class='muted'>fetching repositories…</span>");
-        getRepos().then(function (repos) {
-          var own = (repos || []).filter(function (r) { return !r.fork; });
-          if (!own.length) {
-            line.innerHTML = "<span class='muted'>repositories unavailable — try again later</span>";
+      stars: function () {
+        var line = print("<span class='muted'>fetching starred repositories…</span>");
+        getStars().then(function (repos) {
+          if (!repos || !repos.length) {
+            line.innerHTML = "<span class='muted'>stars unavailable — try again later</span>";
             return;
           }
-          line.innerHTML = "<span class='muted'>" + own.length + " repositories · sorted by last push</span>";
-          own.forEach(function (r) {
+          line.innerHTML = "<span class='muted'>" + repos.length + " repositories idesyatov starred · recent first</span>";
+          repos.forEach(function (r) {
             var stars = r.stargazers_count > 0 ? " <span class='card__star'>★" + r.stargazers_count + "</span>" : "";
-            var arch = r.archived ? " <span class='muted'>[archived]</span>" : "";
             var desc = r.description ? " <span class='muted'>— " + esc(r.description) + "</span>" : "";
-            print("<a href='" + esc(r.html_url) + "' rel='noopener'>" + esc(r.name) + "</a>" + stars + arch + desc);
+            print("<a href='" + esc(r.html_url) + "' rel='noopener'>" + esc(r.full_name) + "</a>" + stars + desc);
           });
         });
       },
