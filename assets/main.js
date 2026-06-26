@@ -101,6 +101,18 @@
   }
 
   /* ---------- visitor geo (public IP, used by `whoami`) ---------- */
+  // Windows desktop doesn't render flag emoji (shows the 2-letter code instead),
+  // so prefer an <img> from flagcdn; fall back to the emoji where it works.
+  function flagMarkup(cc, emoji) {
+    if (cc && cc.length === 2) {
+      var c = cc.toLowerCase();
+      return '<img class="flag" src="https://flagcdn.com/20x15/' + c + '.png" ' +
+             'width="20" height="15" alt="' + esc(cc.toUpperCase()) + '" loading="lazy" ' +
+             "onerror=\"this.replaceWith(document.createTextNode('" + (emoji ? esc(emoji) : "") + "'))\">";
+    }
+    return emoji ? esc(emoji) : "";
+  }
+
   function flagFromCC(cc) {
     if (!cc || cc.length !== 2) return "";
     var base = 0x1F1E6 - "A".charCodeAt(0);
@@ -115,21 +127,21 @@
     { url: "https://ipwho.is/", map: function (g) {
         if (!g || g.success === false || !g.ip) return null;
         return { ip: g.ip, city: g.city, region: g.region, country: g.country,
-                 flag: g.flag && g.flag.emoji,
+                 cc: g.country_code, flag: g.flag && g.flag.emoji,
                  isp: g.connection && g.connection.isp,
                  timezone: g.timezone && g.timezone.id };
       } },
     { url: "https://get.geojs.io/v1/ip/geo.json", map: function (g) {
         if (!g || !g.ip) return null;
         return { ip: g.ip, city: g.city, region: g.region, country: g.country,
-                 flag: flagFromCC(g.country_code),
+                 cc: g.country_code, flag: flagFromCC(g.country_code),
                  isp: g.organization_name,
                  timezone: g.timezone };
       } },
     { url: "https://ipapi.co/json/", map: function (g) {
         if (!g || g.error || !g.ip) return null;
         return { ip: g.ip, city: g.city, region: g.region, country: g.country_name,
-                 flag: flagFromCC(g.country_code),
+                 cc: g.country_code, flag: flagFromCC(g.country_code),
                  isp: g.org,
                  timezone: g.timezone };
       } }
@@ -143,6 +155,33 @@
     return fetch(url, { signal: ctrl.signal })
       .then(function (r) { clearTimeout(t); return r; },
             function (e) { clearTimeout(t); throw e; });
+  }
+
+  /* ---------- AI/LLM news (public Hacker News search, used by `news`) ---------- */
+  // Algolia HN API: free, CORS-enabled, no token. Latest stories mentioning LLM.
+  function loadNews() {
+    var cached = cacheGet("hn_news");
+    if (cached) return Promise.resolve(cached);
+    // restrict to title + no typo tolerance, else "llm" matches author nicks etc.
+    var url = "https://hn.algolia.com/api/v1/search_by_date?query=LLM&tags=story" +
+              "&hitsPerPage=8&restrictSearchableAttributes=title&typoTolerance=false";
+    return fetchTimeout(url, 6000)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !Array.isArray(d.hits)) return null;
+        var items = d.hits.filter(function (h) { return h.title; }).map(function (h) {
+          return {
+            title: h.title,
+            url: h.url || "https://news.ycombinator.com/item?id=" + h.objectID,
+            points: h.points || 0,
+            created_at: h.created_at
+          };
+        });
+        if (!items.length) return null;
+        cacheSet("hn_news", items);
+        return items;
+      })
+      .catch(function () { return null; });
   }
 
   function loadGeo() {
@@ -313,7 +352,7 @@
 
     var COMMANDS = {
       help: function () {
-        print("available: <span class='path'>help whoami projects stack contact clear</span>");
+        print("available: <span class='path'>help whoami projects news contact clear</span>");
       },
       whoami: function () {
         var line = print("<span class='muted'>resolving your network info…</span>");
@@ -324,7 +363,10 @@
           }
           var loc = [g.city, g.region, g.country].filter(Boolean).join(", ");
           line.innerHTML = "<span class='path'>ip:</span> " + esc(g.ip);
-          if (loc) print("<span class='path'>location:</span> " + (g.flag ? esc(g.flag) + " " : "") + esc(loc));
+          if (loc) {
+            var fl = flagMarkup(g.cc, g.flag);
+            print("<span class='path'>location:</span> " + (fl ? fl + " " : "") + esc(loc));
+          }
           if (g.isp) print("<span class='path'>isp:</span> " + esc(g.isp));
           if (g.timezone) print("<span class='path'>timezone:</span> " + esc(g.timezone));
         });
@@ -346,8 +388,19 @@
           });
         });
       },
-      stack: function () {
-        print("Docker Kubernetes Terraform Ansible CI/CD Prometheus Grafana Linux Git Networking");
+      news: function () {
+        var line = print("<span class='muted'>fetching latest AI/LLM stories…</span>");
+        loadNews().then(function (items) {
+          if (!items || !items.length) {
+            line.innerHTML = "<span class='muted'>news unavailable — try again later</span>";
+            return;
+          }
+          line.innerHTML = "<span class='muted'>" + items.length + " latest LLM stories · via Hacker News</span>";
+          items.forEach(function (n) {
+            var meta = "<span class='muted'> · ▲" + n.points + " · " + esc(timeAgo(n.created_at)) + "</span>";
+            print("<a href='" + esc(n.url) + "' rel='noopener'>" + esc(n.title) + "</a>" + meta);
+          });
+        });
       },
       contact: function () {
         print("github: <a href='https://github.com/" + USER + "' rel='noopener'>github.com/" + USER + "</a>");
