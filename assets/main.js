@@ -135,6 +135,16 @@
       } }
   ];
 
+  // fetch with a hard timeout so a hanging provider doesn't stall the chain.
+  function fetchTimeout(url, ms) {
+    if (typeof AbortController === "undefined") return fetch(url);
+    var ctrl = new AbortController();
+    var t = setTimeout(function () { ctrl.abort(); }, ms);
+    return fetch(url, { signal: ctrl.signal })
+      .then(function (r) { clearTimeout(t); return r; },
+            function (e) { clearTimeout(t); throw e; });
+  }
+
   function loadGeo() {
     var cached = cacheGet("geo");
     if (cached) return Promise.resolve(cached);
@@ -142,7 +152,7 @@
     function next() {
       if (i >= GEO_PROVIDERS.length) return null;
       var p = GEO_PROVIDERS[i++];
-      return fetch(p.url)
+      return fetchTimeout(p.url, 4000)
         .then(function (r) { return r.json(); })
         .then(function (g) {
           var data = p.map(g);
