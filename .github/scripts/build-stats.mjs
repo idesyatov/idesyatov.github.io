@@ -83,17 +83,20 @@ const next = {
   profile: prev.profile || { followers: 0, public_repos: 0 },
 };
 
-// --- write only if meaningful data changed (ignore `updated`) ---
-const same =
-  JSON.stringify({ ...prev, updated: "" }) ===
-  JSON.stringify({ ...next, updated: "" });
-if (same) {
-  console.log("build-stats: no changes — stats.json is up to date");
-  process.exit(0);
-}
+// `updated` = the profile SVG's own stamp (when the upstream pipeline last
+// rebuilt the data). Read it from the <!-- UPDATED:START -->...<!-- UPDATED:END -->
+// marker so the snapshot date reflects real upstream refreshes, not our cron.
+const stamp = svg.match(
+  /<!-- UPDATED:START -->\s*updated\s+(\d{4}-\d{2}-\d{2})\s*<!-- UPDATED:END -->/
+);
+if (stamp) next.updated = stamp[1];
+else console.warn("build-stats: SVG updated stamp not found — keeping previous date");
 
-next.updated = new Date().toISOString().slice(0, 10);
+// Always write; the workflow commits only when stats.json actually changes
+// (metrics differ, or the stamp moved). No empty daily commits.
 await writeFile(STATS_PATH, JSON.stringify(next, null, 2) + "\n", "utf8");
-console.log("build-stats: stats.json updated -> " + next.updated);
+console.log("build-stats: snapshot " + next.updated);
+console.log("  languages: " + languages.map((l) => l.name + " " + l.pct + "%").join(", "));
+console.log("  code: " + JSON.stringify(code));
 console.log("  languages: " + languages.map((l) => l.name + " " + l.pct + "%").join(", "));
 console.log("  code: " + JSON.stringify(code));

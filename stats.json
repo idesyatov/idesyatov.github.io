@@ -1,6 +1,6 @@
 {
   "_comment": "Snapshot of heavy metrics taken from the profile terminal.svg. Not computed in-browser (API rate limits). Refresh manually or via a scheduled GitHub Action.",
-  "updated": "2026-06-25",
+  "updated": "2026-06-26",
   "languages": [
     { "name": "Go",         "pct": 72, "color": "#00ADD8" },
     { "name": "TypeScript", "pct": 8,  "color": "#3178c6" },
