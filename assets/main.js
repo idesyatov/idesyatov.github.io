@@ -15,6 +15,7 @@
     "http-runner", "wharf", "ssl-watch", "rscan", "socks-monitor",
     "t0015", "bs4a", "homebrew-tap", "j4f", "j4kube"
   ];
+  var THEMES = ["tokyo-night", "gruvbox", "dracula"];
 
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var el = function (tag, cls) { var e = document.createElement(tag); if (cls) e.className = cls; return e; };
@@ -342,6 +343,7 @@
     var form = $("#term-form"), input = $("#term-input"), out = $("#term-out");
     if (!form || !input || !out) return;
     var intro = out.innerHTML; // keep the hint line so `clear` doesn't wipe it
+    var history = [], histIdx = 0;
 
     function print(text, cls) {
       var p = el("p", "term__line" + (cls ? " " + cls : ""));
@@ -353,7 +355,21 @@
 
     var COMMANDS = {
       help: function () {
-        print("available: <span class='path'>help whoami stars news contact clear</span>");
+        print("commands: <span class='path'>help whoami stars news theme contact clear</span>");
+        print("<span class='muted'>↑/↓ history · Tab autocomplete · just start typing to focus</span>");
+      },
+      theme: function (arg) {
+        if (!arg) {
+          print("current: <span class='path'>" + esc(currentTheme()) + "</span>");
+          print("available: <span class='path'>" + THEMES.join(" ") + "</span> — usage: <span class='path'>theme &lt;name&gt;</span>");
+          return;
+        }
+        if (THEMES.indexOf(arg) === -1) {
+          print("unknown theme: " + esc(arg) + " — try <span class='path'>" + THEMES.join(" ") + "</span>", "err");
+          return;
+        }
+        applyTheme(arg);
+        print("theme set to <span class='path'>" + esc(arg) + "</span>");
       },
       whoami: function () {
         var line = print("<span class='muted'>resolving your network info…</span>");
@@ -427,15 +443,67 @@
       input.value = "";
       syncCaret();
       if (!raw) return;
+      history.push(raw);
+      histIdx = history.length;
       print("<span class='user'>idesyatov@github</span><span class='sep'>:</span>" +
             "<span class='path'>~</span><span class='dollar'>$</span> " + esc(raw));
-      var cmd = raw.split(/\s+/)[0].toLowerCase();
-      if (COMMANDS[cmd]) COMMANDS[cmd]();
+      var parts = raw.split(/\s+/);
+      var cmd = parts[0].toLowerCase();
+      if (COMMANDS[cmd]) COMMANDS[cmd](parts.slice(1).join(" "));
       else print("command not found: " + esc(cmd) + " — try <span class='path'>help</span>", "err");
+    });
+
+    // ↑/↓ walk command history, Tab completes against the command list
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowUp") {
+        if (!history.length) return;
+        e.preventDefault();
+        if (histIdx > 0) histIdx--;
+        input.value = history[histIdx] || "";
+        syncCaret();
+      } else if (e.key === "ArrowDown") {
+        if (!history.length) return;
+        e.preventDefault();
+        if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx]; }
+        else { histIdx = history.length; input.value = ""; }
+        syncCaret();
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        var prefix = input.value.trim().toLowerCase();
+        if (!prefix) return;
+        var matches = Object.keys(COMMANDS).filter(function (c) { return c.indexOf(prefix) === 0; });
+        if (matches.length === 1) { input.value = matches[0]; syncCaret(); }
+        else if (matches.length > 1) print("<span class='muted'>" + matches.join("  ") + "</span>");
+      }
+    });
+
+    // start typing anywhere (no modifier, in no other field) → focus the terminal
+    document.addEventListener("keydown", function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!e.key || e.key.length !== 1) return;
+      var t = e.target, tag = t && t.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (t && t.isContentEditable)) return;
+      input.focus();
     });
   }
 
+  /* ---------- theme ---------- */
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") || THEMES[0];
+  }
+  function applyTheme(name) {
+    if (THEMES.indexOf(name) === -1) name = THEMES[0];
+    if (name === THEMES[0]) document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", name);
+    try { localStorage.setItem("theme", name); } catch (e) {}
+    return name;
+  }
+  function savedTheme() {
+    try { return localStorage.getItem("theme"); } catch (e) { return null; }
+  }
+
   /* ---------- boot ---------- */
+  applyTheme(savedTheme());
   loadSnapshot();
   loadProfile();
   loadRepos();

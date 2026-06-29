@@ -28,6 +28,18 @@
           Menlo, Consolas, monospace;
 }
 
+/* ===== alternate themes (set via the `theme` command, persisted) ===== */
+[data-theme="gruvbox"] {
+  --bg:#282828; --bar:#3c3836; --border:#504945; --text:#ebdbb2; --muted:#928374;
+  --green:#b8bb26; --blue:#83a598; --purple:#d3869b; --cyan:#8ec07c; --teal:#689d6a;
+  --red:#fb4934; --yellow:#fabd2f; --grn-dot:#b8bb26;
+}
+[data-theme="dracula"] {
+  --bg:#282a36; --bar:#343746; --border:#44475a; --text:#f8f8f2; --muted:#6272a4;
+  --green:#50fa7b; --blue:#8be9fd; --purple:#bd93f9; --cyan:#8be9fd; --teal:#a4ffff;
+  --red:#ff5555; --yellow:#f1fa8c; --grn-dot:#50fa7b;
+}
+
 * { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
