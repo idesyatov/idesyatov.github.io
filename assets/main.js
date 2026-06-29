@@ -325,6 +325,67 @@
       .catch(function () { return null; });
   }
 
+  // turn one raw GitHub event into a short line + link; null = skip (noisy type)
+  function describeEvent(ev) {
+    var repo = ev.repo && ev.repo.name;
+    var p = ev.payload || {};
+    var url = repo ? "https://github.com/" + repo : "https://github.com/" + USER;
+    var text;
+    switch (ev.type) {
+      case "PushEvent":
+        var n = p.size || (p.commits ? p.commits.length : 0);
+        text = "pushed " + n + " commit" + (n === 1 ? "" : "s") + " to " + repo;
+        break;
+      case "CreateEvent":
+        text = p.ref_type === "repository"
+          ? "created repository " + repo
+          : "created " + (p.ref_type || "ref") + (p.ref ? " " + p.ref : "") + " in " + repo;
+        break;
+      case "WatchEvent": text = "starred " + repo; break;
+      case "ForkEvent": text = "forked " + repo; break;
+      case "PublicEvent": text = "open-sourced " + repo; break;
+      case "IssuesEvent":
+        text = (p.action || "updated") + " issue in " + repo;
+        if (p.issue && p.issue.html_url) url = p.issue.html_url;
+        break;
+      case "PullRequestEvent":
+        var act = p.action;
+        if (act === "closed" && p.pull_request && p.pull_request.merged) act = "merged";
+        text = act + " PR in " + repo;
+        if (p.pull_request && p.pull_request.html_url) url = p.pull_request.html_url;
+        break;
+      case "IssueCommentEvent":
+        text = "commented in " + repo;
+        if (p.comment && p.comment.html_url) url = p.comment.html_url;
+        break;
+      case "ReleaseEvent":
+        text = "released " + (p.release && p.release.tag_name ? p.release.tag_name : "") + " in " + repo;
+        if (p.release && p.release.html_url) url = p.release.html_url;
+        break;
+      default: return null;
+    }
+    return { text: text, url: url, created_at: ev.created_at };
+  }
+
+  // recent public GitHub activity (used by `activity`); cached.
+  function getActivity() {
+    var cached = cacheGet("gh_activity");
+    if (cached) return Promise.resolve(cached);
+    return getJSON("https://api.github.com/users/" + USER + "/events/public?per_page=30")
+      .then(function (events) {
+        if (!Array.isArray(events)) return null;
+        var items = [];
+        for (var i = 0; i < events.length && items.length < 10; i++) {
+          var d = describeEvent(events[i]);
+          if (d) items.push(d);
+        }
+        if (!items.length) return null;
+        cacheSet("gh_activity", items);
+        return items;
+      })
+      .catch(function () { return null; });
+  }
+
   function loadRepos() {
     var cached = cacheGet("gh_repos");
     if (cached) { renderProjects(cached); return; }
@@ -355,7 +416,7 @@
 
     var COMMANDS = {
       help: function () {
-        print("commands: <span class='path'>help whoami stars news theme contact clear</span>");
+        print("commands: <span class='path'>help whoami stars news activity theme contact clear</span>");
         print("<span class='muted'>↑/↓ history · Tab autocomplete · just start typing to focus</span>");
       },
       theme: function (arg) {
@@ -414,6 +475,20 @@
           items.forEach(function (n) {
             var meta = "<span class='muted'> · ▲" + n.points + " · " + esc(timeAgo(n.created_at)) + "</span>";
             print("<a href='" + esc(n.url) + "' rel='noopener'>" + esc(n.title) + "</a>" + meta);
+          });
+        });
+      },
+      activity: function () {
+        var line = print("<span class='muted'>fetching recent GitHub activity…</span>");
+        getActivity().then(function (items) {
+          if (!items || !items.length) {
+            line.innerHTML = "<span class='muted'>activity unavailable — try again later</span>";
+            return;
+          }
+          line.innerHTML = "<span class='muted'>" + items.length + " recent public events · via GitHub</span>";
+          items.forEach(function (a) {
+            print("<span class='muted'>" + esc(timeAgo(a.created_at)) + "</span> · " +
+                  "<a href='" + esc(a.url) + "' rel='noopener'>" + esc(a.text) + "</a>");
           });
         });
       },
