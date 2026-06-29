@@ -1,10 +1,10 @@
 {
   "_comment": "Snapshot of heavy metrics taken from the profile terminal.svg. Not computed in-browser (API rate limits). Refresh manually or via a scheduled GitHub Action.",
-  "updated": "2026-06-26",
+  "updated": "2026-06-29",
   "languages": [
     {
       "name": "Go",
-      "pct": 72,
+      "pct": 69,
       "color": "#00ADD8"
     },
     {
@@ -19,21 +19,21 @@
     },
     {
       "name": "Rust",
-      "pct": 6,
+      "pct": 5,
       "color": "#dea584"
     },
     {
       "name": "Nix",
-      "pct": 4,
+      "pct": 3,
       "color": "#9aa5ce"
     }
   ],
   "code": {
     "languages": 13,
-    "totalCodeKB": 705,
-    "commits2026": 133,
+    "totalCodeKB": 760,
+    "commits2026": 160,
     "pullRequests": 55,
-    "commits7d": 77
+    "commits7d": 58
   },
   "profile": {
     "followers": 7,
