@@ -221,6 +221,7 @@ a:hover, a:focus-visible { color: var(--teal); border-bottom-color: var(--teal);
 .term__line.muted { color: var(--muted); }
 .term__line.err { color: var(--red); }
 .term__line .flag { vertical-align: -2px; border-radius: 2px; }
+.term__spark { color: var(--teal); letter-spacing: 2px; }
 .term__form { display: flex; align-items: center; gap: 4px; }
 .term__input {
   flex: 0 1 auto; width: 2px; background: transparent; border: none; color: var(--text);

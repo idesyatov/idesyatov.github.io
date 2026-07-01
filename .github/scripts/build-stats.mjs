@@ -98,5 +98,3 @@ await writeFile(STATS_PATH, JSON.stringify(next, null, 2) + "\n", "utf8");
 console.log("build-stats: snapshot " + next.updated);
 console.log("  languages: " + languages.map((l) => l.name + " " + l.pct + "%").join(", "));
 console.log("  code: " + JSON.stringify(code));
-console.log("  languages: " + languages.map((l) => l.name + " " + l.pct + "%").join(", "));
-console.log("  code: " + JSON.stringify(code));

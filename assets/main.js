@@ -19,7 +19,11 @@
 
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var el = function (tag, cls) { var e = document.createElement(tag); if (cls) e.className = cls; return e; };
-  var esc = function (s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; };
+  var esc = function (s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  };
 
   /* ---------- localStorage cache ---------- */
   function cacheGet(key) {
@@ -104,14 +108,21 @@
   /* ---------- visitor geo (public IP, used by `whoami`) ---------- */
   // Windows desktop doesn't render flag emoji (shows the 2-letter code instead),
   // so prefer an <img> from flagcdn; fall back to the emoji where it works.
-  function flagMarkup(cc, emoji) {
+  // returns a DOM node (img with emoji/text fallback) or null — built via the
+  // DOM so third-party emoji data never lands in an inline handler string.
+  function flagNode(cc, emoji) {
     if (cc && cc.length === 2) {
-      var c = cc.toLowerCase();
-      return '<img class="flag" src="https://flagcdn.com/20x15/' + c + '.png" ' +
-             'width="20" height="15" alt="' + esc(cc.toUpperCase()) + '" loading="lazy" ' +
-             "onerror=\"this.replaceWith(document.createTextNode('" + (emoji ? esc(emoji) : "") + "'))\">";
+      var img = el("img", "flag");
+      img.src = "https://flagcdn.com/20x15/" + cc.toLowerCase() + ".png";
+      img.width = 20; img.height = 15;
+      img.alt = cc.toUpperCase();
+      img.loading = "lazy";
+      img.onerror = emoji
+        ? function () { this.replaceWith(document.createTextNode(emoji)); }
+        : function () { this.remove(); };
+      return img;
     }
-    return emoji ? esc(emoji) : "";
+    return emoji ? document.createTextNode(emoji) : null;
   }
 
   function flagFromCC(cc) {
@@ -230,6 +241,17 @@
       if (n >= 1) return n + units[i][0] + " ago";
     }
     return "just now";
+  }
+
+  // tiny bar chart from an array of counts, e.g. [0,2,5,1] -> "▁▄█▂"
+  function sparkline(values) {
+    var blocks = "▁▂▃▄▅▆▇█", max = 0, i, s = "";
+    for (i = 0; i < values.length; i++) if (values[i] > max) max = values[i];
+    for (i = 0; i < values.length; i++) {
+      if (values[i] <= 0) { s += blocks.charAt(0); continue; }
+      s += blocks.charAt(max <= 1 ? 3 : 1 + Math.round((values[i] / max) * (blocks.length - 2)));
+    }
+    return s;
   }
 
   function repoCard(r) {
@@ -367,21 +389,24 @@
     return { text: text, url: url, created_at: ev.created_at };
   }
 
-  // recent public GitHub activity (used by `activity`); cached.
-  function getActivity() {
-    var cached = cacheGet("gh_activity");
+  // recent public GitHub activity (used by `activity`); cached as slim records.
+  function getEvents() {
+    var cached = cacheGet("gh_events");
     if (cached) return Promise.resolve(cached);
     return getJSON("https://api.github.com/users/" + USER + "/events/public?per_page=30")
       .then(function (events) {
-        if (!Array.isArray(events)) return null;
-        var items = [];
-        for (var i = 0; i < events.length && items.length < 10; i++) {
-          var d = describeEvent(events[i]);
-          if (d) items.push(d);
-        }
-        if (!items.length) return null;
-        cacheSet("gh_activity", items);
-        return items;
+        if (!Array.isArray(events) || !events.length) return null;
+        var slim = events.map(function (ev) {
+          var p = ev.payload || {};
+          return {
+            type: ev.type,
+            created_at: ev.created_at,
+            commits: ev.type === "PushEvent" ? (p.size || (p.commits ? p.commits.length : 0)) : 0,
+            d: describeEvent(ev) // { text, url, created_at } or null
+          };
+        });
+        cacheSet("gh_events", slim);
+        return slim;
       })
       .catch(function () { return null; });
   }
@@ -442,8 +467,10 @@
           var loc = [g.city, g.region, g.country].filter(Boolean).join(", ");
           line.innerHTML = "<span class='path'>ip:</span> " + esc(g.ip);
           if (loc) {
-            var fl = flagMarkup(g.cc, g.flag);
-            print("<span class='path'>location:</span> " + (fl ? fl + " " : "") + esc(loc));
+            var p = print("<span class='path'>location:</span> ");
+            var fl = flagNode(g.cc, g.flag);
+            if (fl) { p.appendChild(fl); p.appendChild(document.createTextNode(" ")); }
+            p.appendChild(document.createTextNode(loc));
           }
           if (g.isp) print("<span class='path'>isp:</span> " + esc(g.isp));
           if (g.timezone) print("<span class='path'>timezone:</span> " + esc(g.timezone));
@@ -480,16 +507,48 @@
       },
       activity: function () {
         var line = print("<span class='muted'>fetching recent GitHub activity…</span>");
-        getActivity().then(function (items) {
-          if (!items || !items.length) {
+        getEvents().then(function (evs) {
+          if (!evs || !evs.length) {
             line.innerHTML = "<span class='muted'>activity unavailable — try again later</span>";
             return;
           }
-          line.innerHTML = "<span class='muted'>" + items.length + " recent public events · via GitHub</span>";
-          items.forEach(function (a) {
-            print("<span class='muted'>" + esc(timeAgo(a.created_at)) + "</span> · " +
-                  "<a href='" + esc(a.url) + "' rel='noopener'>" + esc(a.text) + "</a>");
+          var c = { push: 0, commits: 0, pr: 0, star: 0, issue: 0, other: 0 };
+          var days = [0, 0, 0, 0, 0, 0, 0]; // last 7 days, index 6 = today
+          var now = Date.now();
+          evs.forEach(function (e) {
+            switch (e.type) {
+              case "PushEvent": c.push++; c.commits += e.commits || 0; break;
+              case "PullRequestEvent": c.pr++; break;
+              case "WatchEvent": c.star++; break;
+              case "IssuesEvent": case "IssueCommentEvent": c.issue++; break;
+              default: c.other++;
+            }
+            var age = Math.floor((now - new Date(e.created_at).getTime()) / 86400000);
+            if (age >= 0 && age < 7) days[6 - age]++;
           });
+
+          line.innerHTML = "<span class='muted'>last active " + esc(timeAgo(evs[0].created_at)) +
+                " · " + evs.length + " recent public events · via GitHub</span>";
+
+          var parts = [];
+          if (c.push) parts.push(c.push + " push" + (c.push === 1 ? "" : "es") +
+                (c.commits ? " (" + c.commits + " commit" + (c.commits === 1 ? "" : "s") + ")" : ""));
+          if (c.pr) parts.push(c.pr + " PR" + (c.pr === 1 ? "" : "s"));
+          if (c.star) parts.push(c.star + " ★");
+          if (c.issue) parts.push(c.issue + " issue" + (c.issue === 1 ? "" : "s"));
+          if (c.other) parts.push(c.other + " other");
+          print("<span class='path'>" + parts.join("</span> · <span class='path'>") + "</span>");
+          print("<span class='muted'>7d</span> <span class='term__spark'>" + esc(sparkline(days)) + "</span>");
+
+          var shown = 0, last = "";
+          for (var j = 0; j < evs.length && shown < 6; j++) {
+            var d = evs[j].d;
+            if (!d || d.text === last) continue; // skip empties + repeats (e.g. auto-commits)
+            last = d.text;
+            print("<span class='muted'>" + esc(timeAgo(d.created_at)) + "</span> · " +
+                  "<a href='" + esc(d.url) + "' rel='noopener'>" + esc(d.text) + "</a>");
+            shown++;
+          }
         });
       },
       contact: function () {
