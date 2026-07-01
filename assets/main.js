@@ -355,8 +355,12 @@
     var text;
     switch (ev.type) {
       case "PushEvent":
+        // the public feed sometimes omits size/commits (only before→head SHAs);
+        // show a count only when GitHub actually provides one.
         var n = p.size || (p.commits ? p.commits.length : 0);
-        text = "pushed " + n + " commit" + (n === 1 ? "" : "s") + " to " + repo;
+        text = n > 0
+          ? "pushed " + n + " commit" + (n === 1 ? "" : "s") + " to " + repo
+          : "pushed to " + repo;
         break;
       case "CreateEvent":
         text = p.ref_type === "repository"
