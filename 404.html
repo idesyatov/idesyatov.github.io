@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 · idesyatov</title>
+  <meta name="description" content="404 — page not found." />
+  <meta name="robots" content="noindex" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#1a1b26" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231a1b26'/%3E%3Ctext x='3' y='12' font-family='monospace' font-size='10' fill='%239ece6a'%3E%3E_%3C/text%3E%3C/svg%3E" />
+
+  <!-- apply the saved theme before paint so 404 matches the last-used palette -->
+  <script>
+    try {
+      var t = localStorage.getItem("theme");
+      if (t && t !== "tokyo-night") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+
+  <!-- JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <main id="main" class="page">
+    <section class="window" aria-labelledby="nf-title">
+      <header class="window__bar">
+        <span class="dots" aria-hidden="true">
+          <span class="dot dot--red"></span>
+          <span class="dot dot--yellow"></span>
+          <span class="dot dot--green"></span>
+        </span>
+        <span class="window__title" id="nf-title">idesyatov@github: ~</span>
+        <span class="dots dots--spacer" aria-hidden="true"></span>
+      </header>
+
+      <div class="window__body">
+        <p class="cmd"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> cd <span class="path" data-path>/unknown</span></p>
+        <p class="term__line err">bash: cd: <span data-path>/unknown</span>: No such file or directory</p>
+
+        <pre class="ascii" aria-hidden="true" style="margin:18px 0;">
+ _  _    ___  _  _
+| || |  / _ \| || |
+| || |_| | | | || |_
+|__   _| |_| |__   _|
+   |_|  \___/   |_|
+</pre>
+
+        <p>error 404 — the page you asked for isn't here.</p>
+
+        <p class="cmd" style="margin-top:14px;"><span class="prompt"><span class="user">idesyatov@github</span><span class="sep">:</span><span class="path">~</span><span class="dollar">$</span></span> cd ~ &amp;&amp; <a href="/">ls</a></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- surface the actual path GitHub Pages fell through on (set via textContent, never HTML) -->
+  <script>
+    try {
+      var p = (location.pathname || "/") + (location.search || "");
+      var nodes = document.querySelectorAll("[data-path]");
+      for (var i = 0; i < nodes.length; i++) nodes[i].textContent = p;
+    } catch (e) {}
+  </script>
+</body>
+</html>

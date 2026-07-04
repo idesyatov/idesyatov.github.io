@@ -561,6 +561,73 @@
       clear: function () { out.innerHTML = intro; }
     };
 
+    // print preformatted ASCII — escape the whole block so its <, >, & render
+    // literally (cow/train art contains them) and any user text stays inert.
+    function art(raw) { print('<pre class="ascii" style="margin:0">' + esc(raw) + "</pre>"); }
+
+    var FORTUNES = [
+      "It works on my machine. — every engineer, ever",
+      "There is no cloud, it's just someone else's computer.",
+      "In theory, theory and practice are the same. In practice, they're not.",
+      "The best code is no code at all.",
+      "It's not a bug, it's an undocumented feature.",
+      "Weeks of coding can save you hours of planning.",
+      "rm -rf is forever. Backups are your friend.",
+      "99 little bugs in the code… take one down, patch it around… 127 bugs."
+    ];
+
+    // Hidden commands — not listed in `help`, not offered by Tab. Pure strings/
+    // ASCII, no network. Found by poking around, as a terminal should reward.
+    var EGGS = {
+      sudo: function () {
+        print("<span class='user'>idesyatov</span> is not in the sudoers file. " +
+              "This incident will be reported.", "err");
+      },
+      rm: function () {
+        print("rm: this terminal is read-only — nice try <span class='muted'>:)</span>");
+      },
+      exit: function () { print("<span class='muted'>logout: not in this session — just close the tab (or don't).</span>"); },
+      ls: function () {
+        print("<span class='path'>.</span>  <span class='path'>..</span>  " +
+              "<span class='path'>.ssh/</span>  <span class='path'>secrets/</span>  " +
+              "coffee.sh  todo.md  <span class='muted'>#</span> nothing to see here");
+      },
+      cat: function (arg) {
+        arg = (arg || "").trim();
+        if (arg === "/etc/passwd") { print("root:x:0:0:nice try:/root:/bin/no", "err"); return; }
+        if (arg === "coffee.sh") { print("<span class='muted'>#!/bin/sh</span> — echo brewing…  <span class='muted'># try: coffee</span>"); return; }
+        print("cat: " + esc(arg || "?") + ": No such file or directory", "err");
+      },
+      cowsay: function (arg) {
+        var msg = (arg || "moo").slice(0, 40);
+        var bar = new Array(msg.length + 3).join("-");
+        art(" " + bar + "\n< " + msg + " >\n " + bar +
+            "\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\" +
+            "\n                ||----w |\n                ||     ||");
+      },
+      coffee: function () { print("☕  brewing… <span class='err'>HTTP 418: I'm a teapot.</span>"); },
+      make:   function (arg) {
+        if ((arg || "").trim() === "coffee") { EGGS.coffee(); return; }
+        print("make: *** No rule to make target '" + esc((arg || "").trim()) + "'.  Stop.", "err");
+      },
+      fortune: function () { print(esc(FORTUNES[Math.floor(Math.random() * FORTUNES.length)])); },
+      sl: function () {
+        art("      ====        ____________\n  ___|[]|_______|[  o o o o ]|\n |__|[]| [] [] []|[__________]|" +
+            "\n_|__|__|_________|____________|\n  O-O           O-O      O-O");
+      },
+      matrix: function () {
+        var chars = "01ｱｲｳｴｵｶｷｸｹｺﾊﾋﾌﾍﾎ", rows = 6, cols = 30, s = "";
+        for (var y = 0; y < rows; y++) {
+          for (var x = 0; x < cols; x++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+          s += "\n";
+        }
+        print('<pre class="ascii" style="margin:0;color:var(--green)">' + esc(s.replace(/\n$/, "")) + "</pre>");
+      },
+      hello: function () { print("hi there 👋 — try <span class='path'>help</span>"); }
+    };
+    EGGS.hi = EGGS.hello;
+    EGGS.quit = EGGS.logout = EGGS.exit;
+
     // block caret like the footer (green, blinking), positioned after the typed
     // text via an offscreen mirror — the native caret is hidden in CSS.
     var caret = el("span", "term__caret");
@@ -588,6 +655,7 @@
       var parts = raw.split(/\s+/);
       var cmd = parts[0].toLowerCase();
       if (COMMANDS[cmd]) COMMANDS[cmd](parts.slice(1).join(" "));
+      else if (EGGS[cmd]) EGGS[cmd](parts.slice(1).join(" "));
       else print("command not found: " + esc(cmd) + " — try <span class='path'>help</span>", "err");
     });
 
