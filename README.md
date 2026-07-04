@@ -49,8 +49,10 @@ public requests are made.
 
 ```
 index.html        # markup: hero, projects, stack, mini-terminal
+404.html          # terminal-styled not-found page (served by GitHub Pages)
 assets/style.css  # Tokyo Night tokens + alternate themes, responsive, accessible
 assets/main.js    # live GitHub data + cache + interactive terminal
+assets/fonts/     # self-hosted JetBrains Mono woff2 subsets
 stats.json        # snapshot of heavy metrics (the only data file)
 .nojekyll         # serve files as-is (skip Jekyll)
 ```
@@ -60,7 +62,8 @@ updates — see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Notes
 
-- Single web font (JetBrains Mono) with `monospace` fallback; `font-display: swap`.
+- Single web font (JetBrains Mono), **self-hosted** as woff2 subsets (no
+  third-party font request), with `monospace` fallback and `font-display: swap`.
 - Skip link, semantic landmarks, `aria-live` for async regions, focus-visible.
 - `prefers-reduced-motion` disables the blinking cursor and shimmer.
 - No render-blocking JS (`defer`); no external JS dependencies.
