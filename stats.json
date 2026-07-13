@@ -1,10 +1,10 @@
 {
   "_comment": "Snapshot of heavy metrics taken from the profile terminal.svg. Not computed in-browser (API rate limits). Refresh manually or via a scheduled GitHub Action.",
-  "updated": "2026-07-06",
+  "updated": "2026-07-13",
   "languages": [
     {
       "name": "Go",
-      "pct": 67,
+      "pct": 68,
       "color": "#00ADD8"
     },
     {
@@ -30,10 +30,10 @@
   ],
   "code": {
     "languages": 13,
-    "totalCodeKB": 783,
-    "commits2026": 170,
+    "totalCodeKB": 799,
+    "commits2026": 172,
     "pullRequests": 55,
-    "commits7d": 10
+    "commits7d": 2
   },
   "profile": {
     "followers": 7,
