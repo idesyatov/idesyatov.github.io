@@ -1,15 +1,15 @@
 {
   "_comment": "Snapshot of heavy metrics taken from the profile terminal.svg. Not computed in-browser (API rate limits). Refresh manually or via a scheduled GitHub Action.",
-  "updated": "2026-07-20",
+  "updated": "2026-07-27",
   "languages": [
     {
       "name": "Go",
-      "pct": 49,
+      "pct": 47,
       "color": "#00ADD8"
     },
     {
       "name": "Rust",
-      "pct": 31,
+      "pct": 34,
       "color": "#dea584"
     },
     {
@@ -24,16 +24,16 @@
     },
     {
       "name": "JavaScript",
-      "pct": 3,
+      "pct": 2,
       "color": "#f1e05a"
     }
   ],
   "code": {
     "languages": 13,
-    "totalCodeKB": 11,
-    "commits2026": 233,
+    "totalCodeKB": 12,
+    "commits2026": 252,
     "pullRequests": 55,
-    "commits7d": 60
+    "commits7d": 19
   },
   "profile": {
     "followers": 7,
